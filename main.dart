@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
-import 'scraping.dart';
+// import 'scraping.dart';
 
 void main() => runApp(MyApp());
 
@@ -26,7 +26,7 @@ class MapSample extends StatefulWidget {
   State<MapSample> createState() => MapSampleState();
 }
 
-const LatLng urawasutaba =
+const LatLng urawasutaba = // とりあえず手動でデータ追加、実用はscraping.dartからclassでデータimport
 LatLng(35.8586507,139.6567354);
 //35.8586507,139.6567354
 
@@ -45,9 +45,10 @@ Set<Marker> _createMarker() {
       infoWindow: InfoWindow(title:"浦和 蔦屋書店",snippet: "WiFi○ 電源○")
 
     ),
+    // onMapCreated classを作った方がデータを扱いやすいかも
+    // 取得したデータに最終的に必要な情報：id, 店舗名, 電源有無, Wi-Fi有無, LatLng
   };
 }
-
 
 // make sure to initialize before map loading
 // BitmapDescriptor.fromAssetImage(ImageConfiguration(size: Size(12, 12)),
@@ -60,11 +61,6 @@ class MapSampleState extends State<MapSample> {
   Completer<GoogleMapController> _controller = Completer();
   Position? currentPosition;
   late StreamSubscription<Position> positionStream;
-
-  // final CameraPosition _kGooglePlex = CameraPosition(
-  //   target: LatLng(37.42796133580664, -122.085749655962),
-  //   zoom: 14.4746,
-  // );
 
   final LocationSettings locationSettings = const LocationSettings(
     distanceFilter: 100,
@@ -107,6 +103,7 @@ class MapSampleState extends State<MapSample> {
       print(position);
     });
   }
+  // setcustommarker class追加
 
   @override
   Widget build(BuildContext context) {
@@ -165,4 +162,3 @@ class MapSampleState extends State<MapSample> {
   // }
 }
 
-// AIzaSyDFidOHEK6EOLdV3NO3RritzioOpksVmlo

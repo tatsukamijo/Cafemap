@@ -23,8 +23,27 @@ void main() async {
   final document = parse(response.body);
 
   // 要素を絞り込んで、結果を文字列のリストで得る。
-  final result = document.querySelectorAll('h2').map((v) => v.text).toList();
+  final result =
+  document.querySelectorAll('#post_list2 p').map((v) => v.text).toList();
 
-  // 結果を出力する。
+  //いったんraw data表示させとく
   print(result);
+
+  for (var i = 0; i < result.length; i++) {
+    // 各店舗infoでの処理
+    var s = result[i].split('スターバックス');
+    final s_replace = s[0].replaceAll('が使える店', '：◯　');
+    final wifi_info = s_replace.replaceAll('が使えない店', '：×　');
+    var u = s[1].split('店');
+    final shop_name = u[0] + "店";
+    var v = u[1].substring(0, 16);
+    final shop_time = v;
+
+    // print(shop_name);
+    // print(wifi_info);
+    // print(shop_time);
+
+    // print(s[1]);
+    // print(shop_name);
+  }
 }

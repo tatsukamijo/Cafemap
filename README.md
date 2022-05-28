@@ -15,18 +15,18 @@ As you can see my files above, I used python (Beautiful Soup, sqlite3) for scrap
 
 # Requirement
 
-http: ^0.13.1
-html: ^0.15.0
-flutter:
-  sdk: flutter
-geolocator:
-location:
-geocoding: ^2.0.4
-sqflite: any
-path_provider: any
-flutter_google_places: ^0.3.0
-google_api_headers: ^1.1.1
-google_maps_webservice: any
+http: ^0.13.1  
+html: ^0.15.0  
+flutter:  
+  sdk: flutter  
+geolocator:  
+location:  
+geocoding: ^2.0.4  
+sqflite: any  
+path_provider: any  
+flutter_google_places: ^0.3.0  
+google_api_headers: ^1.1.1  
+google_maps_webservice: any  
 
 Environments under Android Studios(Mac) for dart files and Visual Studio Code for the python file are tested.
 

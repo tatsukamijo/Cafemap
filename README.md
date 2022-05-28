@@ -1,6 +1,7 @@
 # Cafemap
 
 "Cafe_map" is a simple app based on Google map.  
+
 It provides users with infomation, especially of WiFi and charging ports, about each Starbucks shops.
 
 # DEMO
@@ -12,6 +13,10 @@ It works like this!
 # Features
 
 As you can see my files above, I used python (Beautiful Soup, sqlite3) for scraping and storing data.
+
+# Note
+
+It's only for Kanto(Tokyo, Kanagawa, Saitama, Chiba) area now. Wait for updates!
 
 # Requirement
 

@@ -33,7 +33,8 @@ flutter_google_places: ^0.3.0
 google_api_headers: ^1.1.1  
 google_maps_webservice: any  
 
-Environments under Android Studios(Mac) for dart files and Visual Studio Code for the python file are tested.
+Environments under Android Studios(Mac) for dart files and Visual Studio Code for the python file.
+Tested only on iOS
 
 # Author
 

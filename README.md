@@ -2,7 +2,7 @@
 
 "Cafe_map" is a simple app based on Google map.  
 
-It provides users with infomation, especially of WiFi and charging ports, about each Starbucks shops.
+It provides users with infomation, especially of WiFi and charging ports, about each Starbucks shop.
 
 # DEMO
 
@@ -39,7 +39,7 @@ Environments under Android Studios(Mac) for dart files and Visual Studio Code fo
 
 * Tatsuya Kamijo
 * Student at the University of Tokyo, Faculty of Engineering
-* tatsukamijo(at)icloud.com             # replace (at) to @.
+* tatsukamijo(at)icloud.com             # replace (at) with @.
 
 # License
 

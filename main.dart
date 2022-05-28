@@ -1,11 +1,20 @@
 import 'dart:async';
 
+import 'package:cafe_map/shopdata.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
-// import 'scraping.dart';
+import 'package:cafe_map/database_helper.dart';
+import 'package:flutter_google_places/flutter_google_places.dart';
+import 'package:google_api_headers/google_api_headers.dart';
+import 'package:google_maps_webservice/places.dart';
 
-void main() => runApp(MyApp());
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -26,84 +35,64 @@ class MapSample extends StatefulWidget {
   State<MapSample> createState() => MapSampleState();
 }
 
-const LatLng urawasutaba = // とりあえず手動でデータ追加、実用はscraping.dartからclassでデータimport
-LatLng(35.8586507,139.6567354);
-//35.8586507,139.6567354
-
-
-Set<Marker> _createMarker() {
-  // BitmapDescriptor customIcon;
-  // BitmapDescriptor.fromAssetImage(ImageConfiguration(size: Size(12, 12)),
-  //     'assets/images/car-icon.png')
-  //     .then((d) {
-  //   customIcon = d;
-  // });
-  return {
-    Marker(
-      markerId: MarkerId("marker_1"),
-      position: urawasutaba,
-      infoWindow: InfoWindow(title:"浦和 蔦屋書店",snippet: "WiFi○ 電源○")
-
-    ),
-    // onMapCreated classを作った方がデータを扱いやすいかも
-    // 取得したデータに最終的に必要な情報：id, 店舗名, 電源有無, Wi-Fi有無, LatLng
-  };
-}
-
-// make sure to initialize before map loading
-// BitmapDescriptor.fromAssetImage(ImageConfiguration(size: Size(12, 12)),
-// 'assets/images/car-icon.png')
-//     .then((d) {
-// customIcon = d;
-// });
-
 class MapSampleState extends State<MapSample> {
   Completer<GoogleMapController> _controller = Completer();
   Position? currentPosition;
   late StreamSubscription<Position> positionStream;
-
   final LocationSettings locationSettings = const LocationSettings(
     distanceFilter: 100,
   );
-
   late LatLng _initialPosition;
-  late bool _loading;
+  late bool _loading = false;
+  List<Shopdata>? shopdatas;
+  late Shopdata shopdata;
+  String googleApikey = "Myapikey";
+  GoogleMapController? mapController; //controller for Google map
+  CameraPosition? cameraPosition;
+  LatLng startLocation = LatLng(27.6602292, 85.308027);
+  String location = "Search Location";
+  BitmapDescriptor? customIcon;
+
+
 
   @override
   void initState() {
     super.initState();
-    _loading = true;
-    _getUserLocation();
+
+    refreshShopdatas();
+    _getUserLocation(); // 現在地取得
+    setCustomMarker(); // カスタムアイコン設定
 
     //位置情報が許可されていない時に許可をリクエストする
     Future(() async {
       LocationPermission permission = await Geolocator.checkPermission();
-      if(permission == LocationPermission.denied){
+      if (permission == LocationPermission.denied) {
         await Geolocator.requestPermission();
       }
     });
+  } // initState
 
-    //現在位置を更新し続ける
-    // positionStream =
-    //     Geolocator.getPositionStream(locationSettings: locationSettings)
-    //         .listen((Position? position) {
-    //       currentPosition = position;
-    //       _initialPosition = LatLng(position.latitude, position.longitude);
-    //       print(position == null
-    //           ? 'Unknown'
-    //           : '${position.latitude.toString()}, ${position.longitude.toString()}');
-    //     });
+  void setCustomMarker() async {
+    customIcon = await BitmapDescriptor.fromAssetImage(const ImageConfiguration(size: Size(12, 12)), 'assets/images/stb.png');
   }
+  // icon by Icon8 https://icons8.com/
+
   void _getUserLocation() async {
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
     setState(() {
       _initialPosition = LatLng(position.latitude, position.longitude);
       _loading = false;
-      print(position);
     });
   }
-  // setcustommarker class追加
+
+  Future refreshShopdatas() async {
+    setState(() => _loading = true);
+
+    this.shopdatas = await DBHelper.instance.getAllShopdata();
+
+    setState(() => _loading = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,49 +105,97 @@ class MapSampleState extends State<MapSample> {
         ),
       ),
       body: _loading
-          ? CircularProgressIndicator()
-          : SafeArea(
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            GoogleMap(
-              mapType: MapType.normal,
-              markers: _createMarker(),
-              initialCameraPosition: CameraPosition(
-                target: _initialPosition,
-                zoom: 14.4746,
+          ? const CircularProgressIndicator()
+          : Stack(
+            fit: StackFit.expand,
+            children: [
+              GoogleMap(
+                mapType: MapType.normal,
+                markers: shopdatas!.map((Shopdata shop) {
+                  List<String> latlng = shop.shoplatlng.split(',');
+                  double latitude = double.parse(latlng[0]);
+                  double longitude = double.parse(latlng[1]);
+                  return Marker(
+                    markerId: MarkerId(shop.id.toString()),
+                    position: LatLng(latitude, longitude),
+                    infoWindow: InfoWindow(title: shop.shopname, snippet: '${shop.wifiinfo}\n${shop.eigyojikan}'),
+                    icon:  customIcon!,
+                  );
+                }).toSet(),
+                initialCameraPosition: CameraPosition(
+                  target: _initialPosition,
+                  zoom: 14.4746,
+                ),
+                onMapCreated: (GoogleMapController controller) {
+                  _controller.complete(controller);
+                },
+                myLocationEnabled: true,
+                myLocationButtonEnabled: true,
+                mapToolbarEnabled: false,
+                buildingsEnabled: true,
+                onTap: (LatLng latLang) {
+                  print('Clicked: $latLang');
+                },
               ),
-              onMapCreated: (GoogleMapController controller) {
-                _controller.complete(controller);
-              },
-              // markers: _createMarker(),
-              myLocationEnabled: true,
-              myLocationButtonEnabled: true,
-              mapToolbarEnabled: false,
-              buildingsEnabled: true,
-              onTap: (LatLng latLang) {
-                print('Clicked: $latLang');
-              },
-            ),
-          ],
-        ),
-      ),
+
+              Positioned(  //search input bar
+                  top:-3,
+                  child: InkWell(
+                      onTap: () async {
+                        var place = await PlacesAutocomplete.show(
+                            context: context,
+                            apiKey: googleApikey,
+                            mode: Mode.overlay,
+                            types: [],
+                            strictbounds: false,
+                            language: 'ja',
+                            components: [Component(Component.country, 'jp')],
+                            //google_map_webservice package
+                            onError: (err){
+                              print(err);
+                            }
+                        );
+
+                        if(place != null){
+                          setState(() {
+                            location = place.description.toString();
+                          });
+
+                          //form google_maps_webservice package
+                          final _plist = GoogleMapsPlaces(apiKey:googleApikey,
+                            apiHeaders: await GoogleApiHeaders().getHeaders(),
+                            //from google_api_headers package
+                          );
+                          String placeid = place.placeId!;
+                          final detail = await _plist.getDetailsByPlaceId(placeid);
+                          final geometry = detail.result.geometry!;
+                          final lat = geometry.location.lat;
+                          final lang = geometry.location.lng;
+                          var newlatlang = LatLng(lat, lang);
+                          await (await _controller.future).moveCamera(
+                            CameraUpdate.newCameraPosition(CameraPosition(target: newlatlang, zoom: 14.4776))
+                          );
+                        }
+                      },
+                      child:Padding(
+                        padding: EdgeInsets.all(15),
+                        child: Card(
+                          child: Container(
+                              padding: EdgeInsets.all(0),
+                              width: MediaQuery.of(context).size.width - 40,
+                              child: ListTile(
+                                title:Text(location, style: TextStyle(fontSize: 18),),
+                                trailing: Icon(Icons.search),
+                                dense: true,
+                              )
+                          ),
+                        ),
+                      )
+                  )
+              )
+            ],
+          ),
     );
   }
-  // Widget build(BuildContext context) {
-  //     return GoogleMap(
-  //       mapType: MapType.normal,
-  //       markers: _createMarker(),
-  //       initialCameraPosition: CameraPosition(
-  //         target: _initialPosition,
-  //         zoom: 18.0,
-  //       ),
-  //       myLocationEnabled: true,
-  //       onMapCreated: (GoogleMapController controller) {
-  //         _controller = controller;
-  //       },
-  //     );
-  //   }
-  // }
 }
 

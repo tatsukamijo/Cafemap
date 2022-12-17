@@ -2,7 +2,7 @@
 
 "Cafe_map" is a simple app based on Google map.  
 
-It provides users with infomation, especially of WiFi and charging ports, about each Starbucks shop.  
+It provides users with infomation about WiFi and charging ports for each Starbucks shop.  
 
 Since I'm a heavy user of Starbucks, I've really wanted this kind of app that allows users to get information about charging ports of each shop.
 
